@@ -1,0 +1,2 @@
+# Exported assets are hashed byte for byte; preserve text asset newlines on Windows clones.
+public/assets/** -text

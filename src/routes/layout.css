@@ -1,0 +1,8 @@
+@import 'tailwindcss';
+:root { font-family: 'Segoe UI', 'Microsoft YaHei', system-ui, sans-serif; font-synthesis: none; text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; color-scheme: light; }
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; width: 100%; min-height: 100%; background: #f5f2e8; }
+body { overflow-x: hidden; }
+button, a { touch-action: manipulation; }
+button { font-family: inherit; }
+::selection { background: #d9dfca; }
