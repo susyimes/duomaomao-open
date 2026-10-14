@@ -3,13 +3,14 @@ import type { GameWorld, Point2 } from '../assets/collision.ts';
 import { PlayerInput } from './input.ts';
 import { SinglePlayerRound, ROUND_SECONDS, type Phase, type RoundState } from './round.ts';
 import { createGameView } from './view.ts';
+import type { LocalizedMessage } from '../i18n.ts';
 
 export type GameSnapshot = {
 	ready: boolean; error: boolean; progress: number; phase: Phase; playerId: CharacterId;
 	remaining: number; countdown: number; elapsed: number; stamina: number; exhausted: boolean;
 	player: Point2; facing: number; cameraYaw: number; found: number; total: number;
 	targets: { id: CharacterId; name: string; color: string; found: boolean }[];
-	nearby: string | null; hints: number; hintCooldown: number; hint: RoundState['hint']; toast: string;
+	nearby: string | null; hints: number; hintCooldown: number; hint: RoundState['hint']; toast: LocalizedMessage | null;
 	muted: boolean; best: number | null; completions: number; world: GameWorld | null; pauseReason: 'manual' | 'focus';
 	remainingPlaces: Point2[];
 };
@@ -18,7 +19,7 @@ export const initialSnapshot: GameSnapshot = {
 	ready: false, error: false, progress: 0, phase: 'lobby', playerId: 'fox', remaining: ROUND_SECONDS,
 	countdown: 3, elapsed: 0, stamina: 100, exhausted: false, player: { x: 0, z: 8.2 }, facing: Math.PI,
 	cameraYaw: 0, found: 0, total: 5, targets: [], nearby: null, hints: 3, hintCooldown: 0, hint: null,
-	toast: '', muted: false, best: null, completions: 0, world: null, pauseReason: 'manual', remainingPlaces: []
+	toast: null, muted: false, best: null, completions: 0, world: null, pauseReason: 'manual', remainingPlaces: []
 };
 
 type SavedProgress = { best: number | null; completions: number; muted: boolean };
@@ -57,7 +58,7 @@ export function createGameRuntime(host: HTMLDivElement, onSnapshot: (snapshot: G
 					return { id: hider.id, name: definition.name, color: definition.color, found: hider.found }; }),
 				nearby: nearby ? characters.find(character => character.id === nearby.id)!.name : null,
 				hints: state.hints, hintCooldown: state.hintCooldown, hint: state.hint ? { ...state.hint, position: { ...state.hint.position } } : null,
-				toast: state.toast?.text ?? '', world: round!.world, pauseReason: state.pauseReason,
+				toast: state.toast ? { key: state.toast.key, params: state.toast.params } : null, world: round!.world, pauseReason: state.pauseReason,
 				remainingPlaces: state.phase === 'lost' ? state.hiders.filter(hider => !hider.found).map(hider => ({ ...hider.position })) : [] } : {}) });
 		host.dataset.phase = state?.phase ?? 'lobby'; host.dataset.ready = String(ready);
 	}

@@ -32,6 +32,7 @@ function densePath(path) {
 }
 
 try {
+	await page.addInitScript(() => localStorage.setItem('duomaomao.locale.v1', 'zh-CN'));
 	await page.goto(url.href, { waitUntil: 'networkidle', timeout: 45000 });
 	await page.locator('.play-scene[data-ready="true"]').waitFor({ timeout: 30000 });
 	assert(await read(), 'Use a running Vite development server: production builds omit the read-only inspector.');

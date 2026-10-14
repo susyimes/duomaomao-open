@@ -6,6 +6,7 @@ import {
 import type { AnimationClip, Object3D, Texture } from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { t } from './i18n.ts';
 
 export type ViewMode = 'island' | 'characters' | 'props';
 export type Pose = 'idle' | 'walk' | 'celebrate';
@@ -34,7 +35,7 @@ export function createPreview(host: HTMLDivElement, events: Events) {
 	renderer.toneMappingExposure = 1.25;
 	renderer.shadowMap.enabled = true;
 	renderer.shadowMap.type = PCFSoftShadowMap;
-	renderer.domElement.setAttribute('aria-label', '可旋转的风铃岛三维场景');
+	const unsubscribeLocale = t.subscribe(translate => renderer.domElement.setAttribute('aria-label', translate('可旋转的风铃岛三维场景')));
 	host.appendChild(renderer.domElement);
 	const scene = new Scene();
 	const camera = new PerspectiveCamera(36, 1, 0.05, 220);
@@ -241,7 +242,7 @@ export function createPreview(host: HTMLDivElement, events: Events) {
 			tween = { eye: target.clone().add(new Vector3(10, 8, 13)), target };
 		},
 		destroy() {
-			disposed = true;
+			disposed = true; unsubscribeLocale();
 			sequence++;
 			cancelAnimationFrame(frame);
 			observer.disconnect();

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { t } from '../i18n';
 	let { onMove }: { onMove: (x: number, y: number) => void } = $props();
 	let knob = $state({ x: 0, y: 0 });
 	let held = $state(false);
@@ -26,7 +27,7 @@
 	}
 </script>
 
-<div class="stick-wrap"><div class="stick" class:held role="group" aria-label="移动摇杆" {@attach attach}><span class="cross horizontal"></span><span class="cross vertical"></span><span class="knob" style:transform={`translate(${knob.x}px, ${knob.y}px)`}></span></div><span class="caption">移动 · 外圈奔跑</span></div>
+<div class="stick-wrap"><div class="stick" class:held role="group" aria-label={$t("移动摇杆")} {@attach attach}><span class="cross horizontal"></span><span class="cross vertical"></span><span class="knob" style:transform={`translate(${knob.x}px, ${knob.y}px)`}></span></div><span class="caption">{$t("移动 · 外圈奔跑")}</span></div>
 
 <style>
 	.stick-wrap { display: grid; justify-items: center; gap: 9px; user-select: none; }

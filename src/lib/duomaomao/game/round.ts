@@ -2,6 +2,7 @@ import { characters, type CharacterId } from '../assets/characters.ts';
 import type { GameWorld, Point2 } from '../assets/collision.ts';
 import { buildNavigation, type Navigation } from './navigation.ts';
 import { clearSegment, distance, groundHeight, isWalkable, movePlayer } from './physics.ts';
+import type { LocalizedMessage } from '../i18n.ts';
 
 export const ROUND_SECONDS = 180;
 export const HIDER_COUNT = 5;
@@ -17,7 +18,7 @@ export type RoundState = {
 	player: Point2; facing: number; moving: boolean; sprinting: boolean; stamina: number; exhausted: boolean;
 	remaining: number; elapsed: number; countdown: number; hiders: Hider[]; hints: number; hintCooldown: number;
 	hint: { position: Point2; label: string; until: number } | null;
-	toast: { text: string; until: number } | null; catchCooldown: number; pauseReason: 'manual' | 'focus';
+	toast: LocalizedMessage & { until: number } | null; catchCooldown: number; pauseReason: 'manual' | 'focus';
 };
 
 export const hidingSpots = [
@@ -147,10 +148,10 @@ export class SinglePlayerRound {
 		this.state.catchCooldown = 0.45;
 		this.events.push({ type: 'search' });
 		const target = this.catchable();
-		if (!target) { this.message('再靠近一点，绕过遮挡物看看。'); return false; }
+		if (!target) { this.message({ key: '再靠近一点，绕过遮挡物看看。' }); return false; }
 		target.found = true; target.foundAt = this.state.elapsed;
 		const name = characters.find(character => character.id === target.id)!.name;
-		this.message(`找到${name}啦！它先回去等你。`);
+		this.message({ key: 'foundToast', params: { name } });
 		this.events.push({ type: 'found', id: target.id });
 		if (this.state.hint && distance(this.state.hint.position, target.position) < 0.01) this.state.hint = null;
 		if (this.state.hiders.every(hider => hider.found)) {
@@ -166,11 +167,11 @@ export class SinglePlayerRound {
 		if (!target) return false;
 		this.state.hints--; this.state.hintCooldown = 15;
 		this.state.hint = { position: { ...target.position }, label: target.spot, until: this.state.elapsed + 7 };
-		this.message(`叮——声音来自${target.spot}。`, 7);
+		this.message({ key: 'hintToast', params: { spot: target.spot } }, 7);
 		this.events.push({ type: 'hint' });
 		return true;
 	}
 
-	private message(text: string, duration = 3) { this.state.toast = { text, until: this.state.elapsed + duration }; }
+	private message(message: LocalizedMessage, duration = 3) { this.state.toast = { ...message, until: this.state.elapsed + duration }; }
 	drainEvents() { const events = this.events; this.events = []; return events; }
 }

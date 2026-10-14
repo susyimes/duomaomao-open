@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { locale, t } from '$lib/duomaomao/i18n';
+	import LanguageSelector from '$lib/duomaomao/LanguageSelector.svelte';
 	import { onDestroy } from 'svelte';
 	import { resolve } from '$app/paths';
 	import Icon from '$lib/duomaomao/Icon.svelte';
@@ -54,44 +56,44 @@
 </script>
 
 <svelte:head>
-	<title>躲猫猫 · 风铃岛</title>
-	<meta name="description" content="风铃岛原创美术预览。一个有树屋、花园、小集市和八位动物伙伴的温暖微缩小镇。" />
+	<title>{$t("躲猫猫 · 风铃岛")}</title>
+	<meta name="description" content={$t("风铃岛原创美术预览。一个有树屋、花园、小集市和八位动物伙伴的温暖微缩小镇。")} />
 </svelte:head>
 
-<main class:evening>
+<main class:evening class:english={$locale === 'en'}>
 	<div class="ambient-grain" aria-hidden="true"></div>
 	<header class="masthead">
-		<div class="wordmark"><span class="brand-mark"><Icon name="paw" size={24} /></span><span>躲猫猫<small>DUOMAOMAO</small></span></div>
-		<div class="edition"><span></span> 风铃岛 · 原创美术预览</div>
-		<div class="header-tools"><button class="text-control" onclick={toggleEvening} aria-pressed={evening}><Icon name={evening ? 'moon' : 'sun'} /><span>{evening ? '暮色' : '日光'}</span></button><button class="icon-button" onclick={toggleSound} aria-label={soundOn ? '关闭声音' : '开启声音'} aria-pressed={soundOn}><Icon name={soundOn ? 'sound' : 'muted'} /></button></div>
+		<div class="wordmark"><span class="brand-mark"><Icon name="paw" size={24} /></span><span>{$t("躲猫猫")}<small>{$t("DUOMAOMAO")}</small></span></div>
+		<div class="edition"><span></span>{$t("风铃岛 · 原创美术预览")}</div>
+		<div class="header-tools"><LanguageSelector /><button class="text-control" onclick={toggleEvening} aria-pressed={evening}><Icon name={evening ? 'moon' : 'sun'} /><span>{evening ? $t("暮色") : $t("日光")}</span></button><button class="icon-button" onclick={toggleSound} aria-label={soundOn ? $t("关闭声音") : $t("开启声音")} aria-pressed={soundOn}><Icon name={soundOn ? 'sound' : 'muted'} /></button></div>
 	</header>
 	<aside class="story-panel">
-		<div class="chapter"><span class="chapter-line"></span> A LITTLE PLACE TO HIDE</div>
-		{#if mode === 'island'}<h1>藏进小镇，<br />等风找到你。</h1><p class="introduction">绕过树屋，穿过集市。<br />下一次躲猫猫，从这里开始。</p>
-		{:else if mode === 'characters'}<h1>小小伙伴，<br />大大的秘密。</h1><p class="introduction">每个小家伙，都有自己的藏法。<br />来认识一下新朋友吧。</p>
-		{:else}<h1>转个弯，<br />就是藏身处。</h1><p class="introduction">一棵树，一个木箱，一间小屋。<br />平凡的小物，也有秘密的一面。</p>{/if}
-		<nav class="view-tabs" aria-label="预览内容">{#each tabs as tab (tab.id)}<button class:active={mode === tab.id} aria-pressed={mode === tab.id} onclick={() => changeMode(tab.id)}><small>{tab.number}</small>{tab.label}<span><Icon name="arrow" size={17} /></span></button>{/each}</nav>
+		<div class="chapter"><span class="chapter-line"></span> {$t("A LITTLE PLACE TO HIDE")}</div>
+		{#if mode === 'island'}<h1>{$t("藏进小镇，")}<br />{$t("等风找到你。")}</h1><p class="introduction">{$t("绕过树屋，穿过集市。")}<br />{$t("下一次躲猫猫，从这里开始。")}</p>
+		{:else if mode === 'characters'}<h1>{$t("小小伙伴，")}<br />{$t("大大的秘密。")}</h1><p class="introduction">{$t("每个小家伙，都有自己的藏法。")}<br />{$t("来认识一下新朋友吧。")}</p>
+		{:else}<h1>{$t("转个弯，")}<br />{$t("就是藏身处。")}</h1><p class="introduction">{$t("一棵树，一个木箱，一间小屋。")}<br />{$t("平凡的小物，也有秘密的一面。")}</p>{/if}
+		<nav class="view-tabs" aria-label={$t("预览内容")}>{#each tabs as tab (tab.id)}<button class:active={mode === tab.id} aria-pressed={mode === tab.id} onclick={() => changeMode(tab.id)}><small>{tab.number}</small>{$t(tab.label)}<span><Icon name="arrow" size={17} /></span></button>{/each}</nav>
 		{#if mode === 'island'}
-			<div class="place-note"><Icon name="leaf" size={28} /><p>这里的每一个角落，<br />都在等一个藏起来的你。</p></div><div class="tiny-tags"><span>树屋</span><span>花园</span><span>小集市</span></div>
+			<div class="place-note"><Icon name="leaf" size={28} /><p>{$t("这里的每一个角落，")}<br />{$t("都在等一个藏起来的你。")}</p></div><div class="tiny-tags"><span>{$t("树屋")}</span><span>{$t("花园")}</span><span>{$t("小集市")}</span></div>
 		{:else if mode === 'characters'}
-			<div class="selection-caption"><span class="color-chip" style:background={friend.color}></span><div><h2>{friend.name}<small>{friend.species}</small></h2><p>{friend.trait}</p></div></div>
-			<div class="pose-options" aria-label="角色动作">{#each poses as item (item.id)}<button class:active={pose === item.id} aria-pressed={pose === item.id} onclick={() => changePose(item.id)}>{item.label}</button>{/each}</div>
+			<div class="selection-caption"><span class="color-chip" style:background={friend.color}></span><div><h2>{$t(friend.name)}<small>{$t(friend.species)}</small></h2><p>{$t(friend.trait)}</p></div></div>
+			<div class="pose-options" aria-label={$t("角色动作")}>{#each poses as item (item.id)}<button class:active={pose === item.id} aria-pressed={pose === item.id} onclick={() => changePose(item.id)}>{$t(item.label)}</button>{/each}</div>
 		{:else}
-			<div class="selection-caption"><span class="prop-number">{String(props.findIndex(item => item.id === propId) + 1).padStart(2, '0')}</span><div><h2>{prop.name}</h2><p>{prop.category} · 转动看看另一面</p></div></div>
-			<div class="sound-samples"><span>听听小镇</span>{#each [{ id: 'bell', label: '风铃' }, { id: 'found', label: '发现' }, { id: 'ready', label: '出发' }] as sample (sample.id)}<button onclick={() => { soundOn = true; playSound(sample.id); }}>{sample.label}</button>{/each}</div>
+			<div class="selection-caption"><span class="prop-number">{String(props.findIndex(item => item.id === propId) + 1).padStart(2, '0')}</span><div><h2>{$t(prop.name)}</h2><p>{$t(prop.category)} {$t("· 转动看看另一面")}</p></div></div>
+			<div class="sound-samples"><span>{$t("听听小镇")}</span>{#each [{ id: 'bell', label: "风铃" }, { id: 'found', label: "发现" }, { id: 'ready', label: "出发" }] as sample (sample.id)}<button onclick={() => { soundOn = true; playSound(sample.id); }}>{$t(sample.label)}</button>{/each}</div>
 		{/if}
 	</aside>
 	<div class="scene" {@attach mountScene}></div>
-	{#if status !== 'ready'}<div class="scene-message" role="status" aria-live="polite">{#if status === 'loading'}<span class="loading-paw"><Icon name="paw" size={30} /></span><p>小镇正在醒来…</p>{:else}<p>暂时没能打开小镇。</p><button onclick={() => { if (viewport.current) showCurrent(); else window.location.reload(); }}>再试一次</button>{/if}</div>{/if}
-	{#if mode !== 'props'}<div class="scene-label"><span class="location-dot"></span>{mode === 'island' ? '风铃岛' : `${friend.name}的小小舞台`}</div>{/if}
-	<div class="view-tools" aria-label="镜头控制"><button class="icon-button" onclick={toggleRotation} class:selected={rotating} aria-label={rotating ? '停止自动旋转' : '自动旋转'} aria-pressed={rotating}><Icon name="rotate" /></button><span></span><button class="icon-button" onclick={() => viewport.current?.zoom(0.8)} aria-label="放大"><Icon name="plus" /></button><button class="icon-button" onclick={() => viewport.current?.zoom(1.25)} aria-label="缩小"><Icon name="minus" /></button><button class="icon-button" onclick={resetView} aria-label="重置视角"><Icon name="reset" /></button></div>
+	{#if status !== 'ready'}<div class="scene-message" role="status" aria-live="polite">{#if status === 'loading'}<span class="loading-paw"><Icon name="paw" size={30} /></span><p>{$t("小镇正在醒来…")}</p>{:else}<p>{$t("暂时没能打开小镇。")}</p><button onclick={() => { if (viewport.current) showCurrent(); else window.location.reload(); }}>{$t("再试一次")}</button>{/if}</div>{/if}
+	{#if mode !== 'props'}<div class="scene-label"><span class="location-dot"></span>{mode === 'island' ? $t("风铃岛") : $t('stage', { name: $t(friend.name) })}</div>{/if}
+	<div class="view-tools" aria-label={$t("镜头控制")}><button class="icon-button" onclick={toggleRotation} class:selected={rotating} aria-label={rotating ? $t("停止自动旋转") : $t("自动旋转")} aria-pressed={rotating}><Icon name="rotate" /></button><span></span><button class="icon-button" onclick={() => viewport.current?.zoom(0.8)} aria-label={$t("放大")}><Icon name="plus" /></button><button class="icon-button" onclick={() => viewport.current?.zoom(1.25)} aria-label={$t("缩小")}><Icon name="minus" /></button><button class="icon-button" onclick={resetView} aria-label={$t("重置视角")}><Icon name="reset" /></button></div>
 	<div class="bottom-tray">
-		{#if mode === 'island'}<div class="landmarks" aria-label="小镇地点">{#each landmarks as place, index (place.id)}<button class:active={focusedPlace === place.id} onclick={() => { focusedPlace = place.id; viewport.current?.focus(place.position); playSound(); }}><small>0{index + 1}</small><Icon name="pin" size={16} />{place.name}</button>{/each}</div>
-		{:else if mode === 'characters'}<div class="friend-picker" aria-label="选择小伙伴">{#each characters as item (item.id)}<button class:active={characterId === item.id} aria-pressed={characterId === item.id} onclick={() => chooseFriend(item.id)}><span style:--friend-color={item.color}><Icon name="paw" size={23} /></span>{item.name}</button>{/each}</div>
-		{:else}<div class="prop-picker" aria-label="选择场景小物">{#each props as item (item.id)}<button class:active={propId === item.id} aria-pressed={propId === item.id} onclick={() => chooseProp(item.id)}>{item.name}</button>{/each}</div>{/if}
-		<p class="gesture-hint"><span class="mouse-shape"></span>拖动旋转 <span>·</span> 滚轮 / 双指缩放</p>
+		{#if mode === 'island'}<div class="landmarks" aria-label={$t("小镇地点")}>{#each landmarks as place, index (place.id)}<button class:active={focusedPlace === place.id} onclick={() => { focusedPlace = place.id; viewport.current?.focus(place.position); playSound(); }}><small>0{index + 1}</small><Icon name="pin" size={16} />{$t(place.name)}</button>{/each}</div>
+		{:else if mode === 'characters'}<div class="friend-picker" aria-label={$t("选择小伙伴")}>{#each characters as item (item.id)}<button class:active={characterId === item.id} aria-pressed={characterId === item.id} onclick={() => chooseFriend(item.id)}><span style:--friend-color={item.color}><Icon name="paw" size={23} /></span>{$t(item.name)}</button>{/each}</div>
+		{:else}<div class="prop-picker" aria-label={$t("选择场景小物")}>{#each props as item (item.id)}<button class:active={propId === item.id} aria-pressed={propId === item.id} onclick={() => chooseProp(item.id)}>{$t(item.name)}</button>{/each}</div>{/if}
+		<p class="gesture-hint"><span class="mouse-shape"></span>{$t("拖动旋转")}<span>·</span>{$t("滚轮 / 双指缩放")}</p>
 	</div>
-	<footer><a class="footer-note" href={resolve('/')}>← 返回单人游戏</a><a href="/assets/duomaomao-art-pack.zip" download><Icon name="download" size={15} /> 下载原创素材包</a><span class="season">EARLY SUMMER, VOL. 01</span></footer>
+	<footer><a class="footer-note" href={resolve('/')}>{$t("← 返回单人游戏")}</a><a href="/assets/duomaomao-art-pack.zip" download><Icon name="download" size={15} />{$t("下载原创素材包")}</a><span class="season">{$t("EARLY SUMMER, VOL. 01")}</span></footer>
 </main>
 
 <style>
@@ -172,6 +174,22 @@
 	@media (max-width: 1100px) { .story-panel { left: 4%; width: 247px; top: 21%; } h1 { font-size: 35px; } .scene { left: 25%; } .view-tabs { max-width: 215px; } .chapter { letter-spacing: 1.1px; } .view-tools { right: 16px; } .edition { display: none; } .landmarks { gap: 5px; } .landmarks button { padding: 9px; } .bottom-tray { left: 28%; right: 8%; } .friend-picker { gap: 6px; } .friend-picker button > span { width: 36px; height: 36px; } }
 	@media (max-width: 720px) {
 		main { min-height: 760px; } .masthead { top: 23px; left: 22px; right: 18px; } .wordmark { font-size: 19px; } .brand-mark { width: 38px; height: 38px; } .header-tools { gap: 10px; } .story-panel { left: 24px; right: 24px; top: 104px; width: auto; } .chapter { font-size: 7px; margin-bottom: 13px; } h1 { font-size: 28px; line-height: 1.35; letter-spacing: 1px; } h1 br { display: none; } .introduction { font-size: 10px; margin: 11px 0 18px; } .introduction br { display: none; } .view-tabs { flex-direction: row; max-width: none; gap: 7px; } .view-tabs button { font-size: 11px; padding: 8px 11px; border: 1px solid #dce2d0; } .view-tabs button > small { margin-right: 8px; font-size: 7px; } .view-tabs button > span { display: none; } .place-note, .tiny-tags { display: none; } .scene { inset: 248px 0 170px 0; } .scene-label { top: auto; bottom: 184px; right: 24px; font-size: 9px; } .scene-message { left: 50%; top: 50%; } .view-tools { top: 350px; right: 13px; gap: 0; padding: 4px; } .view-tools .icon-button { width: 28px; height: 32px; } .bottom-tray { left: 16px; right: 16px; bottom: 83px; } .landmarks button { padding: 9px 10px; font-size: 10px; } .landmarks button > small { display: none; } .gesture-hint { font-size: 8px; margin-top: 13px; } .selection-caption { position: absolute; top: 145px; left: 0; margin-top: 0; gap: 8px; z-index: 1; } .selection-caption h2 { font-size: 14px; } .selection-caption p { max-width: 120px; font-size: 9px; } .color-chip { width: 22px; height: 30px; } .pose-options { position: absolute; top: 210px; left: 0; margin: 0; flex-direction: column; gap: 5px; } .pose-options button { padding: 5px 9px; font-size: 9px; } .friend-picker { gap: 4px; justify-content: space-around; } .friend-picker button { padding: 0; font-size: 9px; } .friend-picker button > span { width: 34px; height: 34px; } .prop-picker { max-height: 96px; gap: 4px; } .prop-picker button { font-size: 9px; padding: 5px 7px; } .sound-samples { position: absolute; top: 216px; left: 0; margin: 0; flex-wrap: wrap; max-width: 85px; font-size: 9px; } .sound-samples > span { flex-basis: 100%; } footer { left: 22px; right: 22px; bottom: 19px; flex-wrap: wrap; font-size: 8px; letter-spacing: .5px; row-gap: 10px; } .footer-note { flex-basis: 100%; } footer .season { font-size: 7px; }
+	}
+	.english h1 { font-size: clamp(30px, 3.1vw, 42px); letter-spacing: 0; }
+	.english .wordmark { letter-spacing: 0; }
+	.english .friend-picker { gap: 7px; }
+	.english .friend-picker button { letter-spacing: 0; }
+	@media (max-width: 720px) {
+		.english .wordmark { font-size: 15px; }
+		.english h1 { font-size: 26px; }
+		.header-tools :global(.language-selector) { position: absolute; top: 45px; right: 0; }
+		.view-tabs { flex-wrap: wrap; }
+		.english .view-tabs button { padding: 7px 8px; font-size: 10px; }
+		.english .friend-picker { flex-wrap: wrap; gap: 6px; }
+		.english .friend-picker button { font-size: 8px; }
+		.english .friend-picker button > span { width: 29px; height: 29px; }
+		.english .landmarks { flex-wrap: wrap; gap: 4px; }
+		.english .landmarks button { font-size: 9px; padding: 7px; }
 	}
 	@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 </style>

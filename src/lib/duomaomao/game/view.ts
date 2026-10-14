@@ -12,6 +12,8 @@ import type { SinglePlayerRound } from './round.ts';
 import type { PlayerInput } from './input.ts';
 import { disposeModel } from '../preview.ts';
 import { optimizeRigidParts } from './optimize.ts';
+import { get } from 'svelte/store';
+import { t } from '../i18n.ts';
 
 type Actor = { root: Group; mixer: AnimationMixer; actions: Record<string, AnimationAction>; pose: string; label: Sprite; shadow: Mesh<CircleGeometry, MeshBasicMaterial>; footOffset: number };
 export type GameView = ReturnType<typeof createGameView>;
@@ -28,7 +30,6 @@ export function createGameView(host: HTMLDivElement, progress: (amount: number) 
 	renderer.toneMappingExposure = 1.16;
 	renderer.shadowMap.enabled = !softwareRenderer;
 	renderer.shadowMap.type = PCFSoftShadowMap;
-	renderer.domElement.setAttribute('aria-label', '风铃岛单人躲猫猫游戏场景');
 	renderer.domElement.tabIndex = 0;
 	host.appendChild(renderer.domElement);
 	const scene = new Scene();
@@ -51,13 +52,19 @@ export function createGameView(host: HTMLDivElement, progress: (amount: number) 
 	const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
 	const tickLoaded = () => { loaded++; if (!disposed) progress(loaded / 11); };
 
-	function label(text: string, color = '#405c46') {
-		const canvas = document.createElement('canvas'); canvas.width = 256; canvas.height = 80;
+	const localizedLabels: { canvas: HTMLCanvasElement; texture: CanvasTexture; text: string; color: string }[] = [];
+	function drawLabel(canvas: HTMLCanvasElement, text: string, color: string) {
 		const ctx = canvas.getContext('2d')!;
+		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		ctx.fillStyle = '#fff8e8'; ctx.beginPath(); ctx.roundRect(4, 4, 248, 70, 28); ctx.fill();
 		ctx.fillStyle = color; ctx.font = '600 32px "Microsoft YaHei", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-		ctx.fillText(text, 128, 40);
+		ctx.fillText(text, 128, 40, 225);
+	}
+	function label(text: string, color = '#405c46') {
+		const canvas = document.createElement('canvas'); canvas.width = 256; canvas.height = 80;
+		drawLabel(canvas, get(t)(text), color);
 		const texture = new CanvasTexture(canvas); texture.colorSpace = SRGBColorSpace; textures.add(texture);
+		localizedLabels.push({ canvas, texture, text, color });
 		const sprite = new Sprite(new SpriteMaterial({ map: texture, transparent: true, depthTest: false, depthWrite: false }));
 		sprite.scale.set(1.18, 0.37, 1); sprite.renderOrder = 10;
 		return sprite;
@@ -123,6 +130,10 @@ export function createGameView(host: HTMLDivElement, progress: (amount: number) 
 	const hintMarker = new Mesh(new RingGeometry(0.7, 0.82, 48), new MeshBasicMaterial({ color: '#e6b551', transparent: true, opacity: 0.85, depthTest: false, depthWrite: false }));
 	hintMarker.rotation.x = -Math.PI / 2; hintMarker.visible = false; scene.add(hintMarker);
 	const hintLabel = label('叮——', '#967127'); hintLabel.visible = false; scene.add(hintLabel);
+	const unsubscribeLocale = t.subscribe(translate => {
+		renderer.domElement.setAttribute('aria-label', translate('风铃岛单人躲猫猫游戏场景'));
+		for (const entry of localizedLabels) { drawLabel(entry.canvas, translate(entry.text), entry.color); entry.texture.needsUpdate = true; }
+	});
 	const searchMarker = new Mesh(new RingGeometry(0.95, 1, 48), new MeshBasicMaterial({ color: '#fff3c5', transparent: true, opacity: 0, depthTest: false, depthWrite: false }));
 	searchMarker.rotation.x = -Math.PI / 2; scene.add(searchMarker);
 
@@ -207,7 +218,7 @@ export function createGameView(host: HTMLDivElement, progress: (amount: number) 
 	return { ready, canvas: renderer.domElement, render,
 		search() { pulseUntil = visualTime + 0.55; },
 		destroy() {
-			disposed = true; observer.disconnect();
+			disposed = true; observer.disconnect(); unsubscribeLocale();
 			for (const actor of actors.values()) { actor.mixer.stopAllAction(); actor.mixer.uncacheRoot(actor.root); actor.label.material.dispose(); actor.shadow.geometry.dispose(); actor.shadow.material.dispose(); disposeModel(actor.root); }
 			disposeModel(scenery);
 			for (const marker of [playerMarker, hintMarker, searchMarker]) { marker.geometry.dispose(); marker.material.dispose(); }

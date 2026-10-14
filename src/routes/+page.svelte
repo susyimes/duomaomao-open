@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { locale, t } from '$lib/duomaomao/i18n';
+	import LanguageSelector from '$lib/duomaomao/LanguageSelector.svelte';
 	import { resolve } from '$app/paths';
 	import Icon from '$lib/duomaomao/Icon.svelte';
 	import Thumbstick from '$lib/duomaomao/game/Thumbstick.svelte';
@@ -25,7 +27,7 @@
 		queueMicrotask(() => { if (panel.isConnected) panel.querySelector('button')?.focus(); });
 		const trap = (event: KeyboardEvent) => {
 			if (event.key !== 'Tab') return;
-			const buttons = [...panel.querySelectorAll<HTMLButtonElement>('button:not(:disabled)')];
+			const buttons = [...panel.querySelectorAll<HTMLElement>('button:not(:disabled), select:not(:disabled)')];
 			const first = buttons[0], last = buttons.at(-1);
 			if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
 			else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
@@ -35,52 +37,52 @@
 	}
 </script>
 
-<svelte:head><title>躲猫猫 · 风铃岛</title><meta name="description" content="在风铃岛玩一局单人躲猫猫。三分钟，找到五位藏起来的小伙伴。" /></svelte:head>
+<svelte:head><title>{$t("躲猫猫 · 风铃岛")}</title><meta name="description" content={$t("在风铃岛玩一局单人躲猫猫。三分钟，找到五位藏起来的小伙伴。")} /></svelte:head>
 
-<main class="game-shell" class:in-round={active} data-phase={game.phase} data-found={game.found}>
+<main class="game-shell" class:in-round={active} class:english={$locale === 'en'} data-phase={game.phase} data-found={game.found}>
 	{#key generation}<div class="play-scene" {@attach mountGame}></div>{/key}
 	<div class="grain" aria-hidden="true"></div>
 	<header class="game-header">
-		<div class="wordmark"><span class="brand-paw"><Icon name="paw" size={24} /></span><div>躲猫猫<small>风铃岛 · 单人游戏</small></div></div>
-		{#if active}<div class="clock-pill" class:urgent={game.remaining <= 30}><Icon name="clock" size={17} /><span role="timer" aria-live="off" aria-label={`剩余 ${Math.ceil(game.remaining)} 秒`}>{clock(game.remaining)}</span></div>{/if}
-		<div class="header-buttons"><button class="round-button" onclick={() => runtime.current?.mute()} aria-label={game.muted ? '开启声音' : '关闭声音'} aria-pressed={!game.muted}><Icon name={game.muted ? 'muted' : 'sound'} /></button>{#if active}<button class="round-button" onclick={() => runtime.current?.pause()} aria-label="暂停游戏"><Icon name="pause" /></button>{:else if game.phase === 'lobby'}<a class="gallery-link" href={resolve('/gallery')}>素材图鉴 <Icon name="arrow" size={15} /></a>{/if}</div>
+		<div class="wordmark"><span class="brand-paw"><Icon name="paw" size={24} /></span><div>{$t("躲猫猫")}<small>{$t("风铃岛 · 单人游戏")}</small></div></div>
+		{#if active}<div class="clock-pill" class:urgent={game.remaining <= 30}><Icon name="clock" size={17} /><span role="timer" aria-live="off" aria-label={$t('remaining', { seconds: Math.ceil(game.remaining) })}>{clock(game.remaining)}</span></div>{/if}
+		<div class="header-buttons"><LanguageSelector /><button class="round-button" onclick={() => runtime.current?.mute()} aria-label={game.muted ? $t("开启声音") : $t("关闭声音")} aria-pressed={!game.muted}><Icon name={game.muted ? 'muted' : 'sound'} /></button>{#if active}<button class="round-button" onclick={() => runtime.current?.pause()} aria-label={$t("暂停游戏")}><Icon name="pause" /></button>{:else if game.phase === 'lobby'}<a class="gallery-link" href={resolve('/gallery')}>{$t("素材图鉴")}<Icon name="arrow" size={15} /></a>{/if}</div>
 	</header>
 
 	{#if game.phase === 'lobby'}
-		<section class="lobby-card" aria-label="开始单人游戏">
-			<div class="eyebrow"><span></span> WINDBELL ISLAND</div>
-			<h1>藏好了吗？<br />我来找你啦。</h1>
-			<p class="lobby-lede">穿过花园，绕到树屋后面。<br /><strong>3 分钟</strong>，找到 <strong>5 位</strong>藏起来的小伙伴。</p>
-			<div class="character-title"><span>今天，你是 <strong>{selected.name}</strong></span><small>{selected.species}</small></div>
-			<div class="character-picker" aria-label="选择角色">{#each characters as character (character.id)}<button disabled={!game.ready} class:selected={game.playerId === character.id} aria-label={`选择${character.name}`} aria-pressed={game.playerId === character.id} onclick={() => runtime.current?.selectPlayer(character.id)}><span style:--fur={character.color}><Icon name="paw" size={24} /></span><small>{character.name}</small></button>{/each}</div>
-			{#if game.error}<div class="load-error" role="alert"><p>小镇暂时没有打开，请重试。</p><button class="primary-button" onclick={retry}>重新加载</button></div>
-			{:else}<button class="primary-button start-button" disabled={!game.ready} onclick={() => runtime.current?.start()}>{#if game.ready}<Icon name="play" size={17} />开始寻找<span>单人</span>{:else}<Icon name="leaf" size={19} />小镇正在醒来…<span>{Math.round(game.progress * 100)}%</span>{/if}</button>{/if}
-			<p class="lobby-footnote">每局藏身点不同 · 3 次风铃提示</p>
-			{#if game.best !== null}<p class="best-record"><Icon name="star" size={13} />最快找到全部伙伴：{clock(game.best)}</p>{/if}
-			<div class="quick-guide desktop-only"><div><kbd>W A S D</kbd><span>移动</span><kbd>Shift</kbd><span>奔跑</span></div><div><kbd>E / 空格</kbd><span>找到</span><kbd>H</kbd><span>风铃提示</span></div><p>拖动转镜头，滚轮缩放；Esc 暂停。</p></div>
-			<p class="touch-guide touch-only">拖动左侧摇杆移动，外圈奔跑。<br />右侧滑动转镜头，靠近伙伴后点「找到」。</p>
+		<section class="lobby-card" aria-label={$t("开始单人游戏")}>
+			<div class="eyebrow"><span></span> {$t("WINDBELL ISLAND")}</div>
+			<h1>{$t("藏好了吗？")}<br />{$t("我来找你啦。")}</h1>
+			<p class="lobby-lede">{$t("穿过花园，绕到树屋后面。")}<br /><strong>{$t("3 分钟")}</strong>{$t("，找到")}<strong>{$t("5 位")}</strong>{$t("藏起来的小伙伴。")}</p>
+			<div class="character-title"><span>{$t("今天，你是")}<strong>{$t(selected.name)}</strong></span><small>{$t(selected.species)}</small></div>
+			<div class="character-picker" aria-label={$t("选择角色")}>{#each characters as character (character.id)}<button disabled={!game.ready} class:selected={game.playerId === character.id} aria-label={$t('select', { name: $t(character.name) })} aria-pressed={game.playerId === character.id} onclick={() => runtime.current?.selectPlayer(character.id)}><span style:--fur={character.color}><Icon name="paw" size={24} /></span><small>{$t(character.name)}</small></button>{/each}</div>
+			{#if game.error}<div class="load-error" role="alert"><p>{$t("小镇暂时没有打开，请重试。")}</p><button class="primary-button" onclick={retry}>{$t("重新加载")}</button></div>
+			{:else}<button class="primary-button start-button" disabled={!game.ready} onclick={() => runtime.current?.start()}>{#if game.ready}<Icon name="play" size={17} />{$t("开始寻找")}<span>{$t("单人")}</span>{:else}<Icon name="leaf" size={19} />{$t("小镇正在醒来…")}<span>{Math.round(game.progress * 100)}%</span>{/if}</button>{/if}
+			<p class="lobby-footnote">{$t("每局藏身点不同 · 3 次风铃提示")}</p>
+			{#if game.best !== null}<p class="best-record"><Icon name="star" size={13} />{$t("最快找到全部伙伴：")}{clock(game.best)}</p>{/if}
+			<div class="quick-guide desktop-only"><div><kbd>W A S D</kbd><span>{$t("移动")}</span><kbd>Shift</kbd><span>{$t("奔跑")}</span></div><div><kbd>{$t("E / 空格")}</kbd><span>{$t("找到")}</span><kbd>H</kbd><span>{$t("风铃提示")}</span></div><p>{$t("拖动转镜头，滚轮缩放；Esc 暂停。")}</p></div>
+			<p class="touch-guide touch-only">{$t("拖动左侧摇杆移动，外圈奔跑。")}<br />{$t("右侧滑动转镜头，靠近伙伴后点「找到」。")}</p>
 		</section>
-		<div class="lobby-caption"><Icon name="leaf" size={18} /><span>藏起来的，是小小的秘密。<br /><strong>找到的，是一起玩的好朋友。</strong></span></div>
+		<div class="lobby-caption"><Icon name="leaf" size={18} /><span>{$t("藏起来的，是小小的秘密。")}<br /><strong>{$t("找到的，是一起玩的好朋友。")}</strong></span></div>
 	{:else if active}
-		<section class="objective" aria-label="寻找进度"><div class="objective-title"><span>找到小伙伴</span><strong>{game.found}<small> / {game.total}</small></strong></div><div class="target-row">{#each game.targets as target (target.id)}<div class="target-badge" class:found={target.found} aria-label={`${target.name}${target.found ? '已找到' : '未找到'}`}><span style:--fur={target.color}><Icon name={target.found ? 'check' : 'paw'} size={19} /></span><small>{target.name}</small></div>{/each}</div></section>
-		<aside class="minimap" aria-label="小镇地图"><div class="map-title"><span>风铃岛</span><small>北 N</small></div><svg viewBox="-11.5 -11.5 23 23" aria-label="地图上的你"><circle r="10.6" fill="#dce6c9" stroke="#f8f2d7" stroke-width=".5" /><path d="M0 8 1 2 0 0-.5-2M-8-1 0 0 8-2M-6 3.5-1 4" stroke="#faf4df" stroke-width="1" fill="none" /><ellipse cx="-4.1" cy="3.5" rx="2.32" ry="1.63" fill="#91c9c3" />{#each mapSolids as solid (solid.id)}<g transform={`translate(${solid.x} ${solid.z}) rotate(${-solid.yaw * 180 / Math.PI})`}>{#if solid.kind === 'circle'}<circle r={solid.radius} fill="#9bb589" />{:else}<rect x={-solid.halfX} y={-solid.halfZ} width={solid.halfX * 2} height={solid.halfZ * 2} rx=".12" fill={solid.id.startsWith('cottage') ? '#cea889' : '#95ae82'} />{/if}</g>{/each}{#if game.hint}<circle cx={game.hint.position.x} cy={game.hint.position.z} r=".8" fill="#eabb51" opacity=".85" />{/if}<g transform={`translate(${game.player.x} ${game.player.z}) rotate(${180 - game.facing * 180 / Math.PI})`} data-player-x={game.player.x.toFixed(4)} data-player-z={game.player.z.toFixed(4)}><circle r=".65" fill="#fff7e2" /><path d="M0-.8-.5.55 0 .3 .5 .55Z" fill="#c47e59" /></g></svg></aside>
+		<section class="objective" aria-label={$t("寻找进度")}><div class="objective-title"><span>{$t("找到小伙伴")}</span><strong>{game.found}<small> / {game.total}</small></strong></div><div class="target-row">{#each game.targets as target (target.id)}<div class="target-badge" class:found={target.found} aria-label={$t('targetStatus', { name: $t(target.name), status: target.found ? "已找到" : "未找到" })}><span style:--fur={target.color}><Icon name={target.found ? 'check' : 'paw'} size={19} /></span><small>{$t(target.name)}</small></div>{/each}</div></section>
+		<aside class="minimap" aria-label={$t("小镇地图")}><div class="map-title"><span>{$t("风铃岛")}</span><small>{$t("北 N")}</small></div><svg viewBox="-11.5 -11.5 23 23" aria-label={$t("地图上的你")}><circle r="10.6" fill="#dce6c9" stroke="#f8f2d7" stroke-width=".5" /><path d="M0 8 1 2 0 0-.5-2M-8-1 0 0 8-2M-6 3.5-1 4" stroke="#faf4df" stroke-width="1" fill="none" /><ellipse cx="-4.1" cy="3.5" rx="2.32" ry="1.63" fill="#91c9c3" />{#each mapSolids as solid (solid.id)}<g transform={`translate(${solid.x} ${solid.z}) rotate(${-solid.yaw * 180 / Math.PI})`}>{#if solid.kind === 'circle'}<circle r={solid.radius} fill="#9bb589" />{:else}<rect x={-solid.halfX} y={-solid.halfZ} width={solid.halfX * 2} height={solid.halfZ * 2} rx=".12" fill={solid.id.startsWith('cottage') ? '#cea889' : '#95ae82'} />{/if}</g>{/each}{#if game.hint}<circle cx={game.hint.position.x} cy={game.hint.position.z} r=".8" fill="#eabb51" opacity=".85" />{/if}<g transform={`translate(${game.player.x} ${game.player.z}) rotate(${180 - game.facing * 180 / Math.PI})`} data-player-x={game.player.x.toFixed(4)} data-player-z={game.player.z.toFixed(4)}><circle r=".65" fill="#fff7e2" /><path d="M0-.8-.5.55 0 .3 .5 .55Z" fill="#c47e59" /></g></svg></aside>
 		{#if game.phase === 'playing'}
-			<div class="stamina"><div><span>{game.exhausted ? '喘口气，再出发' : '奔跑体力'}</span><small class="desktop-only">按住 Shift</small></div><div class="stamina-track"><span style:width={`${game.stamina}%`} class:low={game.stamina < 25}></span></div></div>
+			<div class="stamina"><div><span>{game.exhausted ? $t("喘口气，再出发") : $t("奔跑体力")}</span><small class="desktop-only">{$t("按住 Shift")}</small></div><div class="stamina-track"><span style:width={`${game.stamina}%`} class:low={game.stamina < 25}></span></div></div>
 			<div class="touch-controls touch-only"><Thumbstick onMove={(x, y) => runtime.current?.stick(x, y)} /></div>
-			<div class="action-buttons"><button class="hint-button" disabled={game.hints === 0 || game.hintCooldown > 0} onclick={() => runtime.current?.hint()} aria-label="风铃提示"><Icon name="bell" size={22} /><span>{game.hintCooldown > 0 ? `${Math.ceil(game.hintCooldown)} 秒` : `风铃 ${game.hints}/3`}</span><kbd class="desktop-only">H</kbd></button><button class="catch-button" disabled={!game.nearby} onclick={() => runtime.current?.catchFriend()} aria-label={game.nearby ? `找到${game.nearby}` : '靠近小伙伴后找到'}><Icon name="paw" size={25} /><span>{game.nearby ? `找到${game.nearby}` : '靠近小伙伴'}</span><kbd class="desktop-only">E</kbd></button></div>
-			<button class="camera-button" onclick={() => runtime.current?.resetCamera()} aria-label="重置镜头"><Icon name="compass" size={21} /></button>
-			<p class="movement-guide desktop-only"><kbd>WASD / 方向键</kbd>移动 <span>·</span> 拖动转镜头 <span>·</span> <kbd>Q / R</kbd>转向</p>
+			<div class="action-buttons"><button class="hint-button" disabled={game.hints === 0 || game.hintCooldown > 0} onclick={() => runtime.current?.hint()} aria-label={$t("风铃提示")}><Icon name="bell" size={22} /><span>{game.hintCooldown > 0 ? $t('seconds', { seconds: Math.ceil(game.hintCooldown) }) : $t('bells', { count: game.hints })}</span><kbd class="desktop-only">H</kbd></button><button class="catch-button" disabled={!game.nearby} onclick={() => runtime.current?.catchFriend()} aria-label={game.nearby ? $t('findFriend', { name: $t(game.nearby ?? '') }) : $t("靠近小伙伴后找到")}><Icon name="paw" size={25} /><span>{game.nearby ? $t('findFriend', { name: $t(game.nearby ?? '') }) : $t("靠近小伙伴")}</span><kbd class="desktop-only">E</kbd></button></div>
+			<button class="camera-button" onclick={() => runtime.current?.resetCamera()} aria-label={$t("重置镜头")}><Icon name="compass" size={21} /></button>
+			<p class="movement-guide desktop-only"><kbd>{$t("WASD / 方向键")}</kbd>{$t("移动")}<span>·</span>{$t("拖动转镜头")}<span>·</span> <kbd>Q / R</kbd>{$t("转向")}</p>
 		{/if}
-		{#if game.toast && game.phase === 'playing'}<div class="toast"><Icon name={game.hint ? 'bell' : 'paw'} size={18} />{game.toast}</div>{/if}
+		{#if game.toast && game.phase === 'playing'}<div class="toast"><Icon name={game.hint ? 'bell' : 'paw'} size={18} />{$t(game.toast?.key ?? '', game.toast?.params)}</div>{/if}
 	{/if}
 
-	{#if game.phase === 'countdown'}<div class="countdown-overlay" aria-live="assertive"><span>大家都在藏好自己</span><strong>{Math.ceil(game.countdown)}</strong><p>准备好，出发寻找小伙伴！</p></div>{/if}
+	{#if game.phase === 'countdown'}<div class="countdown-overlay" aria-live="assertive"><span>{$t("大家都在藏好自己")}</span><strong>{Math.ceil(game.countdown)}</strong><p>{$t("准备好，出发寻找小伙伴！")}</p></div>{/if}
 	{#if game.phase === 'paused'}
-		<div class="modal-backdrop"><div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="pause-title" tabindex="-1" {@attach focusPanel}><span class="modal-emblem"><Icon name="leaf" size={31} /></span><div class="eyebrow">TAKE A LITTLE BREAK</div><h2 id="pause-title">小镇等你回来。</h2><p>{game.pauseReason === 'focus' ? '游戏已自动暂停，时间不会继续流逝。' : '歇一会儿，小伙伴们还在原来的地方。'}</p><div class="pause-guide desktop-only"><div><kbd>WASD / 方向键</kbd><span>移动</span></div><div><kbd>Shift</kbd><span>按住奔跑</span></div><div><kbd>E / 空格</kbd><span>靠近后找到伙伴</span></div><div><kbd>H</kbd><span>风铃提示</span></div><div><kbd>拖动 / Q、R</kbd><span>转动镜头</span></div><div><kbd>C / 滚轮</kbd><span>重置 / 缩放镜头</span></div></div><p class="touch-guide touch-only">左侧摇杆移动，外圈奔跑。<br />拖动场景转镜头，靠近伙伴后点「找到」。<br />风铃会指出一位伙伴藏身的地方。</p><button class="primary-button" onclick={() => runtime.current?.resume()}><Icon name="play" size={16} />继续寻找</button><div class="secondary-row"><button onclick={() => runtime.current?.start()}>重新开一局</button><button onclick={() => runtime.current?.lobby()}>回到小镇</button></div></div></div>
+		<div class="modal-backdrop"><div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="pause-title" tabindex="-1" {@attach focusPanel}><span class="modal-emblem"><Icon name="leaf" size={31} /></span><div class="eyebrow">{$t("TAKE A LITTLE BREAK")}</div><div class="dialog-language"><LanguageSelector /></div><h2 id="pause-title">{$t("小镇等你回来。")}</h2><p>{game.pauseReason === 'focus' ? $t("游戏已自动暂停，时间不会继续流逝。") : $t("歇一会儿，小伙伴们还在原来的地方。")}</p><div class="pause-guide desktop-only"><div><kbd>{$t("WASD / 方向键")}</kbd><span>{$t("移动")}</span></div><div><kbd>Shift</kbd><span>{$t("按住奔跑")}</span></div><div><kbd>{$t("E / 空格")}</kbd><span>{$t("靠近后找到伙伴")}</span></div><div><kbd>H</kbd><span>{$t("风铃提示")}</span></div><div><kbd>{$t("拖动 / Q、R")}</kbd><span>{$t("转动镜头")}</span></div><div><kbd>{$t("C / 滚轮")}</kbd><span>{$t("重置 / 缩放镜头")}</span></div></div><p class="touch-guide touch-only">{$t("左侧摇杆移动，外圈奔跑。")}<br />{$t("拖动场景转镜头，靠近伙伴后点「找到」。")}<br />{$t("风铃会指出一位伙伴藏身的地方。")}</p><button class="primary-button" onclick={() => runtime.current?.resume()}><Icon name="play" size={16} />{$t("继续寻找")}</button><div class="secondary-row"><button onclick={() => runtime.current?.start()}>{$t("重新开一局")}</button><button onclick={() => runtime.current?.lobby()}>{$t("回到小镇")}</button></div></div></div>
 	{:else if game.phase === 'won' || game.phase === 'lost'}
-		<div class="modal-backdrop result-backdrop"><div class="modal-card result-card" role="dialog" aria-modal="true" aria-labelledby="result-title" tabindex="-1" {@attach focusPanel}><span class="modal-emblem" class:success={game.phase === 'won'}><Icon name={game.phase === 'won' ? 'paw' : 'clock'} size={37} /></span><div class="eyebrow">{game.phase === 'won' ? 'EVERYONE IS HERE' : 'THE BELL IS RINGING'}</div><h2 id="result-title">{game.phase === 'won' ? '一个都没落下！' : '风铃响，时间到。'}</h2><p>{game.phase === 'won' ? '再来一局，看看这次谁藏得更好。' : `还有 ${game.total - game.found} 位小伙伴藏得很好。再找一次吧。`}</p><div class="result-metrics"><div><strong>{game.found}<small>/{game.total}</small></strong><span>找到伙伴</span></div><div><strong>{clock(game.elapsed)}</strong><span>本局用时</span></div><div><strong>{3 - game.hints}<small> 次</small></strong><span>风铃提示</span></div></div><div class="result-friends">{#each game.targets as target (target.id)}<span style:color={target.found ? target.color : '#b8bdaf'} title={`${target.name}${target.found ? '已找到' : '未找到'}`}><Icon name={target.found ? 'paw' : 'leaf'} size={25} /></span>{/each}</div>{#if game.phase === 'won' && game.best !== null}<p class="result-best"><Icon name="star" size={14} />你的最快记录：{clock(game.best)}</p>{/if}<button class="primary-button" onclick={() => runtime.current?.start()}><Icon name="rotate" size={17} />再玩一局</button><button class="text-button" onclick={() => runtime.current?.lobby()}>回到小镇</button></div></div>
+		<div class="modal-backdrop result-backdrop"><div class="modal-card result-card" role="dialog" aria-modal="true" aria-labelledby="result-title" tabindex="-1" {@attach focusPanel}><span class="modal-emblem" class:success={game.phase === 'won'}><Icon name={game.phase === 'won' ? 'paw' : 'clock'} size={37} /></span><div class="eyebrow">{$t(game.phase === 'won' ? 'EVERYONE IS HERE' : 'THE BELL IS RINGING')}</div><div class="dialog-language"><LanguageSelector /></div><h2 id="result-title">{game.phase === 'won' ? $t("一个都没落下！") : $t("风铃响，时间到。")}</h2><p>{game.phase === 'won' ? $t("再来一局，看看这次谁藏得更好。") : $t('notFound', { count: game.total - game.found })}</p><div class="result-metrics"><div><strong>{game.found}<small>/{game.total}</small></strong><span>{$t("找到伙伴")}</span></div><div><strong>{clock(game.elapsed)}</strong><span>{$t("本局用时")}</span></div><div><strong>{3 - game.hints}<small>{$t("次")}</small></strong><span>{$t("风铃提示")}</span></div></div><div class="result-friends">{#each game.targets as target (target.id)}<span style:color={target.found ? target.color : '#b8bdaf'} title={$t('targetStatus', { name: $t(target.name), status: target.found ? "已找到" : "未找到" })}><Icon name={target.found ? 'paw' : 'leaf'} size={25} /></span>{/each}</div>{#if game.phase === 'won' && game.best !== null}<p class="result-best"><Icon name="star" size={14} />{$t("你的最快记录：")}{clock(game.best)}</p>{/if}<button class="primary-button" onclick={() => runtime.current?.start()}><Icon name="rotate" size={17} />{$t("再玩一局")}</button><button class="text-button" onclick={() => runtime.current?.lobby()}>{$t("回到小镇")}</button></div></div>
 	{/if}
-	<div class="sr-only" aria-live="polite">{game.toast}</div>
+	<div class="sr-only" aria-live="polite">{$t(game.toast?.key ?? '', game.toast?.params)}</div>
 </main>
 
 <style>
@@ -197,5 +199,34 @@
 	@media (max-width: 720px) { .game-header { top: 18px; left: 19px; right: 18px; } .wordmark { font-size: 17px; gap: 8px; } .brand-paw { width: 35px; height: 35px; border-radius: 12px 12px 12px 4px; } .wordmark small { font-size: 7px; letter-spacing: 1px; } .round-button { width: 34px; height: 34px; } .header-buttons { gap: 6px; } .gallery-link { font-size: 10px; padding: 8px 3px; } .lobby-card { left: 18px; right: 18px; width: auto; top: auto; bottom: 18px; padding: 22px; background: #f7f5e9ed; border: 1px solid #fff8; border-radius: 23px; backdrop-filter: blur(9px); max-height: calc(100dvh - 105px); overflow-y: auto; } .lobby-card .eyebrow { margin-bottom: 12px; font-size: 7px; } h1 { font-size: 29px; line-height: 1.35; letter-spacing: 1px; } .lobby-lede { font-size: 11px; margin: 12px 0 18px; } .lobby-lede br { display: none; } .character-picker { justify-content: space-between; gap: 3px; margin: 13px 0 21px; } .character-picker button span { width: 29px; height: 29px; } .character-picker small { font-size: 8px; } .start-button { max-width: none; padding: 14px 17px; font-size: 13px; } .lobby-footnote { max-width: none; font-size: 8px; } .quick-guide { margin-top: 17px; } .lobby-caption { display: none; } .in-round .wordmark > div { display: none; } .clock-pill { gap: 7px; padding: 8px 13px; } .clock-pill span { font-size: 19px; } .objective { left: 17px; top: 73px; padding: 10px 11px; width: 200px; border-radius: 13px; } .objective-title { font-size: 10px; margin-bottom: 8px; } .objective-title strong { font-size: 15px; } .target-badge > span { width: 24px; height: 24px; } .target-badge > small { font-size: 8px; } .minimap { right: 17px; top: 73px; width: 108px; padding: 8px; border-radius: 13px; } .map-title { font-size: 8px; margin-bottom: 4px; } .map-title small { font-size: 7px; } .modal-card { padding: 26px; } .modal-card h2 { font-size: 25px; } .modal-emblem { width: 58px; height: 58px; margin-bottom: 16px; } .result-metrics strong { font-size: 21px; } }
 	@media (max-height: 660px) { .lobby-card { top: 100px; bottom: 18px; max-height: calc(100dvh - 115px); overflow-y: auto; padding-right: 12px; } .lobby-card .eyebrow { margin-bottom: 10px; } h1 { font-size: 34px; } .lobby-lede { margin: 10px 0 15px; } .quick-guide { margin-top: 15px; } .character-picker { margin-bottom: 16px; } .objective { padding: 9px 12px; } .minimap { width: 100px; } }
 	@media (max-width: 359px) { .objective { width: 178px; left: 12px; } .target-row { gap: 4px; } .minimap { width: 88px; right: 12px; } .character-picker button span { width: 25px; height: 25px; } .modal-card .touch-guide { margin-bottom: 22px; } }
+	.dialog-language { margin: 0 0 14px; }
+	.english h1 { font-size: clamp(32px, 3.1vw, 44px); letter-spacing: 0; }
+	.english .wordmark { letter-spacing: 0; }
+	.english .character-picker { gap: 3px; justify-content: space-between; }
+	.english .character-picker small { font-size: 8px; }
+	.english .target-row { gap: 3px; }
+	.english .target-badge small { font-size: 8px; }
+	.english .modal-card h2 { letter-spacing: 0; font-family: Georgia, serif; }
+	.english .pause-guide > div { gap: 8px; }
+	.english .pause-guide kbd { flex-shrink: 0; }
+	.toast { max-width: calc(100% - 40px); white-space: normal; text-align: center; }
+	@media (max-width: 720px) {
+		.wordmark { letter-spacing: 0; }
+		.wordmark small { max-width: 120px; letter-spacing: 0; }
+		.english .wordmark { font-size: 14px; }
+		.game-header :global(.language-selector) { position: absolute; right: 0; top: 43px; }
+		.in-round .game-header :global(.language-selector) { top: -7px; right: 82px; }
+		.in-round .clock-pill { left: 48px; transform: none; padding: 6px 9px; gap: 5px; }
+		.in-round .clock-pill span { font-size: 16px; }
+		.in-round .game-header { top: 22px; }
+		.in-round .minimap { top: 85px; }
+		.english h1 { font-size: 29px; }
+		.english .stamina { width: 145px; }
+		.english .movement-guide { max-width: calc(100% - 64px); }
+	}
+	@media (max-width: 380px) {
+		.in-round .game-header :global(.language-selector) { top: 37px; right: 0; }
+		.in-round .minimap { top: 97px; }
+	}
 	@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
 </style>

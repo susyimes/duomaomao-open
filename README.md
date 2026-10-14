@@ -19,6 +19,10 @@
 - 暂停、重开、返回小镇与胜负结算；切出窗口自动暂停，本机保存最快纪录。
 - `/gallery` 素材图鉴，可查看场景、角色、道具和动画。
 
+游戏与素材图鉴支持 **English / 简体中文**。首次打开按浏览器语言偏好顺序选择最先出现的 `en-*` 或 `zh-*`（中文统一为简体中文；没有支持的语言时使用英语）；页头和暂停/结算窗口的语言选择器可即时切换，不会重置回合。手动选择保存在独立的 `duomaomao.locale.v1` 本机存储键中，原有游戏进度存档不变；浏览器禁用存储时仍可切换。
+
+The game and art gallery support English and Simplified Chinese. Use the language selector to switch immediately without restarting your round. Your manual choice is saved locally when browser storage is available.
+
 | 操作 | 电脑 | 触屏 |
 | --- | --- | --- |
 | 移动 / 奔跑 | WASD、方向键 / Shift | 左摇杆 / 推到外圈 |
