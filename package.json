@@ -17,11 +17,15 @@
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "test:unit": "vitest",
     "test": "npm run test:unit -- --run",
-    "test:play": "node scripts/test-single-player.mjs"
+    "test:play": "node scripts/test-single-player.mjs",
+    "build:toy": "pnpm assets:check && node scripts/build-toy.mjs",
+    "toy:check": "node scripts/verify-toy.mjs",
+    "test:toy": "node scripts/test-toy.mjs"
   },
   "devDependencies": {
-    "@sveltejs/adapter-auto": "next",
-    "@sveltejs/kit": "next",
+    "@sveltejs/adapter-auto": "8.0.0-next.0",
+    "@sveltejs/adapter-static": "^4.0.0",
+    "@sveltejs/kit": "3.0.0-next.4",
     "@sveltejs/vite-plugin-svelte": "^7.1.2",
     "@tailwindcss/forms": "^0.5.11",
     "@tailwindcss/typography": "^0.5.19",

@@ -7,6 +7,8 @@ node_modules
 .wrangler
 /.svelte-kit
 /build
+/.toy-work/
+/dist-toy/
 
 # Generated from the upstream reference assets by pnpm assets:prepare
 /static/messenger
